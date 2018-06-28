@@ -50,7 +50,7 @@ define('PASSWORD', 'wincache');
  * In that case use the array below to define the names of users in your
  * domain/network/workgroup which you want to grant access to.
  */
-$user_allowed = array('DOMAIN\user1', 'DOMAIN\user2', 'DOMAIN\user3');
+$user_allowed = array('genesis\craiga', 'DOMAIN\user2', 'DOMAIN\user3');
 
 /**
  * If the array contains string 'all', then all the users authenticated by IIS
@@ -65,7 +65,7 @@ if (!extension_loaded('wincache')) {
     die('The extension WINCACHE (php_wincache.dll) is not loaded. No statistics to show.');
 }
 
-if (USE_AUTHENTICATION == 1) {
+if (USE_AUTHENTICATION === 1) {
     if (!empty($_SERVER['AUTH_TYPE']) && !empty($_SERVER['REMOTE_USER']) && strcasecmp($_SERVER['REMOTE_USER'], 'anonymous')) {
         if (!in_array(strtolower($_SERVER['REMOTE_USER']), array_map('strtolower', $user_allowed))
             && !in_array('all', array_map('strtolower', $user_allowed))) {
@@ -77,7 +77,7 @@ if (USE_AUTHENTICATION == 1) {
         header('WWW-Authenticate: Basic realm="WINCACHE Log In!"');
         header('HTTP/1.0 401 Unauthorized');
         exit;
-    } else if ($_SERVER['PHP_AUTH_PW'] == 'wincache') {
+    } else if ($_SERVER['PHP_AUTH_PW'] === 'wincache') {
         echo "Please change the default password to get this page working. Exiting.";
         exit;
     }
@@ -176,15 +176,15 @@ if ($session_cache_available && ($page == SUMMARY_DATA || $page == SCACHE_DATA))
 function cmp($a, $b)
 {
     global $sort_key;
-    if ($sort_key == 'file_name')
+    if ($sort_key === 'file_name') {
         return strcmp(get_trimmed_filename($a[$sort_key], PATH_MAX_LENGTH), get_trimmed_filename($b[$sort_key], PATH_MAX_LENGTH));
-    else if ($sort_key == 'resolve_path')
+    } else if ($sort_key === 'resolve_path')
         return strcmp(get_trimmed_string($a[$sort_key], PATH_MAX_LENGTH), get_trimmed_string($b[$sort_key], PATH_MAX_LENGTH));
     else
         return 0;
 }
 
-function convert_bytes_to_string($bytes)
+function convert_bytes_to_string(float $bytes): string
 {
     $units = array(0 => 'B', 1 => 'kB', 2 => 'MB', 3 => 'GB');
     $log = log($bytes, 1024);
@@ -193,64 +193,75 @@ function convert_bytes_to_string($bytes)
     return round($size, 2) . ' ' . $units[$power];
 }
 
-function seconds_to_words($seconds)
+function seconds_to_words(float $seconds): string
 {
     /*** return value ***/
-    $ret = "";
+    $ret = '';
 
     /*** get the hours ***/
-    $hours = intval(intval($seconds) / 3600);
+    $hours = (int)((int)$seconds / 3600);
     if ($hours > 0) {
         $ret .= "$hours hours ";
     }
     /*** get the minutes ***/
-    $minutes = bcmod((intval($seconds) / 60), 60);
+    $minutes = bcmod((int)$seconds / 60, 60);
     if ($hours > 0 || $minutes > 0) {
         $ret .= "$minutes minutes ";
     }
 
     /*** get the seconds ***/
-    $seconds = bcmod(intval($seconds), 60);
+    $seconds = bcmod((int)$seconds, 60);
     $ret .= "$seconds seconds";
 
     return $ret;
 }
 
-function get_trimmed_filename($filepath, $max_len)
+function get_trimmed_filename(string $filepath, int $max_len): string
 {
-    if ($max_len <= 0) die ('The maximum allowed length must be bigger than 0');
+    if ($max_len <= 0) {
+        die ('The maximum allowed length must be bigger than 0');
+    }
 
     $result = basename($filepath);
-    if (strlen($result) > $max_len)
+    if (strlen($result) > $max_len) {
         $result = substr($result, -1 * $max_len);
+    }
 
     return $result;
 }
 
-function get_trimmed_string($input, $max_len)
+function get_trimmed_string(string $input, int $max_len): string
 {
-    if ($max_len <= 3) die ('The maximum allowed length must be bigger than 3');
+    if ($max_len <= 3) {
+        die ('The maximum allowed length must be bigger than 3');
+    }
 
     $result = $input;
-    if (strlen($result) > $max_len)
+    if (strlen($result) > $max_len) {
         $result = substr($result, 0, $max_len - 3) . '...';
+    }
 
     return $result;
 }
 
-function get_trimmed_ini_value($input, $max_len, $separators = array('|', ','))
+function get_trimmed_ini_value(string $input, int $max_len, array $separators = array('|', ',')): string
 {
-    if ($max_len <= 3) die ('The maximum allowed length must be bigger than 3');
+    if ($max_len <= 3) {
+        die ('The maximum allowed length must be bigger than 3');
+    }
 
     $result = $input;
     $lastindex = 0;
     if (strlen($result) > $max_len) {
         $result = substr($result, 0, $max_len - 3) . '...';
-        if (!is_array($separators)) die('The separators must be in an array');
+        if (!is_array($separators)) {
+            die('The separators must be in an array');
+        }
         foreach ($separators as $separator) {
             $index = strripos($result, $separator);
-            if ($index !== false && $index > $lastindex)
+            if ($index !== false && $index > $lastindex) {
                 $lastindex = $index;
+            }
         }
         if (0 < $lastindex && $lastindex < ($max_len - 3))
             $result = substr($result, 0, $lastindex + 1) . '...';
@@ -306,16 +317,20 @@ function gd_loaded()
 }
 
 if ($img > 0) {
-    if (!gd_loaded())
+    if (!gd_loaded()) {
         exit(0);
+    }
 
     function create_hit_miss_chart($width, $height, $hits, $misses, $title = 'Hits & Misses (in %)')
     {
-
         $hit_percent = 0;
         $miss_percent = 0;
-        if ($hits < 0) $hits = 0;
-        if ($misses < 0) $misses = 0;
+        if ($hits < 0) {
+            $hits = 0;
+        }
+        if ($misses < 0) {
+            $misses = 0;
+        }
         if ($hits > 0 || $misses > 0) {
             $hit_percent = round($hits / ($hits + $misses) * 100, 2);
             $miss_percent = round($misses / ($hits + $misses) * 100, 2);
@@ -331,7 +346,7 @@ if ($img > 0) {
         $gray = imagecolorallocate($image, 0xC0, 0xC0, 0xC0);
 
         $maxval = max($data);
-        $nval = sizeof($data);
+        $nval = count($data);
 
         // draw something here
         $hmargin = 38; // left horizontal margin for y-labels
@@ -372,8 +387,9 @@ if ($img > 0) {
 
             imagestring($image, $labelfont, $xpos, $ypos - (int)($txtheight / 2), $ydat, $black);
 
-            if (!($i == 0) && !($i >= $ngrid))
+            if (!($i == 0) && !($i >= $ngrid)) {
                 imageline($image, $hmargin - 3, $ypos, $hmargin + $xsize, $ypos, $gray);
+            }
             // don't draw at Y=0 and top
         }
 
@@ -456,7 +472,7 @@ if ($img > 0) {
             $value[$n] = $val;
             $total += $val;
             $arc_dec[$n] = $total * 360;
-            $arc_rad[$n] = $total * 2 * pi();
+            $arc_rad[$n] = $total * 2 * M_PI;
         }
 
         //the base:
@@ -481,13 +497,13 @@ if ($img > 0) {
             imagearc($image, $centerX, $centerY, $diameter, $diameter, $arc_dec[$i - 1], $arc_dec[$i], $black);
 
             //calculate the positions for the labels:
-            $arc_rad_label = $arc_rad[$i - 1] + 0.5 * $perc[$i] * 2 * pi();
+            $arc_rad_label = $arc_rad[$i - 1] + 0.5 * $perc[$i] * 2 * M_PI;
             $hpos = $centerX + 1.1 * ($diameter / 2) * sin($arc_rad_label);
             $vpos = $centerY + 1.1 * ($diameter / 2) * cos($arc_rad_label);
-            if (($arc_rad_label > 0.5 * pi()) && ($arc_rad_label < 1.5 * pi())) {
+            if (($arc_rad_label > 0.5 * M_PI) && ($arc_rad_label < 1.5 * M_PI)) {
                 $vpos = $vpos - $vfw;
             }
-            if ($arc_rad_label > pi()) {
+            if ($arc_rad_label > M_PI) {
                 $hpos = $hpos - $hfw * strlen($label[$i]);
             }
             //display the labels:
@@ -497,7 +513,7 @@ if ($img > 0) {
         //fill the parts with their colors:
         for ($i = 1; $i <= $n; $i++) {
             if (round($arc_dec[$i] - $arc_dec[$i - 1]) != 0) {
-                $arc_rad_label = $arc_rad[$i - 1] + 0.5 * $perc[$i] * 2 * pi();
+                $arc_rad_label = $arc_rad[$i - 1] + 0.5 * $perc[$i] * 2 * M_PI;
                 $hpos = $centerX + 0.8 * ($diameter / 2) * sin($arc_rad_label);
                 $vpos = $centerY + 0.8 * ($diameter / 2) * cos($arc_rad_label);
                 imagefilltoborder($image, $hpos, $vpos, $black, $pie_color[$i]);
@@ -535,7 +551,7 @@ if ($img > 0) {
     exit;
 }
 
-function get_chart_markup($data_type, $chart_type, $chart_param1, $chart_param2)
+function get_chart_markup($data_type, $chart_type, $chart_param1, $chart_param2): string
 {
     global $PHP_SELF;
 
@@ -544,8 +560,9 @@ function get_chart_markup($data_type, $chart_type, $chart_param1, $chart_param2)
 
     if (gd_loaded()) {
         $alt_title = get_chart_title($data_type);
-        if ($alt_title == '')
+        if ($alt_title == '') {
             return '';
+        }
 
         if ($chart_type == BAR_CHART)
             $alt_title .= ' hit and miss percentage chart';
@@ -565,7 +582,7 @@ function get_chart_markup($data_type, $chart_type, $chart_param1, $chart_param2)
     return $result;
 }
 
-function cache_scope_text($is_local)
+function cache_scope_text(bool $is_local): string
 {
     return ($is_local == true) ? 'local' : 'global';
 }
@@ -610,10 +627,8 @@ if (USE_AUTHENTICATION && $user_cache_available && $clear_user_cache) {
 }
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-
+<!DOCTYPE html>
+<html>
 <head>
     <style type="text/css">
         body {
@@ -802,9 +817,7 @@ if (USE_AUTHENTICATION && $user_cache_available && $clear_user_cache) {
     </style>
     <title>Windows Cache Extension for PHP - Statistics</title>
 </head>
-
 <body>
-
 <div id="content">
     <div id="header">
         <h1>Windows Cache Extension for PHP - Statistics</h1>
@@ -823,7 +836,7 @@ if (USE_AUTHENTICATION && $user_cache_available && $clear_user_cache) {
                         href="<?php echo $PHP_SELF, '?page=', RCACHE_DATA; ?>">Resolve Path Cache</a></li>
         </ul>
     </div>
-    <?php if ($page == SUMMARY_DATA) {
+    <?php if ($page === SUMMARY_DATA) {
         init_cache_info(SUMMARY_DATA);
         ?>
         <div class="overview">
@@ -838,7 +851,7 @@ if (USE_AUTHENTICATION && $user_cache_available && $clear_user_cache) {
                     </tr>
                     <tr>
                         <td class="e">PHP version</td>
-                        <td class="v"><?php echo phpversion(); ?></td>
+                        <td class="v"><?php echo PHP_VERSION; ?></td>
                     </tr>
                     <tr title="<?php echo $_SERVER['DOCUMENT_ROOT']; ?>">
                         <td class="e">Document root</td>
@@ -854,7 +867,7 @@ if (USE_AUTHENTICATION && $user_cache_available && $clear_user_cache) {
                     </tr>
                     <tr>
                         <td class="e">Operating System</td>
-                        <td class="v"><?php echo php_uname('s'), ' ', php_uname('r'); ?></td>
+                        <td class="v"><?php echo PHP_OS, ' ', php_uname('r'); ?></td>
                     </tr>
                     <tr>
                         <td class="e">Processor information</td>
@@ -898,13 +911,15 @@ if (USE_AUTHENTICATION && $user_cache_available && $clear_user_cache) {
                     <?php
                     foreach (ini_get_all('wincache') as $ini_name => $ini_value) {
                         // Do not show the settings used for debugging
-                        if (in_array($ini_name, $settings_to_hide))
+                        if (in_array($ini_name, $settings_to_hide)) {
                             continue;
+                        }
                         echo '<tr title="', $ini_value['local_value'], '"><td class="e">', $ini_name, '</td><td class="v">';
-                        if (!is_numeric($ini_value['local_value']))
+                        if (is_string($ini_value['local_value'])) {
                             echo get_trimmed_ini_value($ini_value['local_value'], INI_MAX_LENGTH);
-                        else
+                        } else {
                             echo $ini_value['local_value'];
+                        }
                         echo '</td></tr>', "\n";
                     }
                     ?>
@@ -1470,5 +1485,4 @@ if (USE_AUTHENTICATION && $user_cache_available && $clear_user_cache) {
     <div class="clear"></div>
 </div>
 </body>
-
 </html>
